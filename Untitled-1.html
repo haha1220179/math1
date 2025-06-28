@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2D Parabola Shooter</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #000;
+      background-color: #fff;
+    }
+    #inputContainer {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 2D Parabola Shooter Game</h1>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div id="inputContainer">
+    <label for="equationInput">Enter a quadratic equation (e.g., y = -0.01*(x-300)*(x-500)):</label>
+    <input type="text" id="equationInput" size="50" />
+    <button onclick="shoot()">Shoot</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let player = { x: 0, y: 0 };
+    let target = { x: 0, y: 0 };
+
+    function randomPoint(minX, maxX, minY, maxY) {
+      return {
+        x: Math.floor(Math.random() * (maxX - minX)) + minX,
+        y: Math.floor(Math.random() * (maxY - minY)) + minY
+      };
+    }
+
+    function generatePoints() {
+      do {
+        player = randomPoint(50, 250, 200, 350);
+        target = randomPoint(550, 750, 50, 250);
+      } while (Math.abs(player.x - target.x) < 100 || Math.abs(player.y - target.y) < 50);
+    }
+
+    function drawGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw player
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "blue";
+      ctx.fill();
+
+      // Draw target
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    }
+
+    function shoot() {
+      const equation = document.getElementById("equationInput").value;
+
+      try {
+        // Evaluate y = f(x)
+        const f = new Function("x", `return ${equation.split("=")[1]}`);
+
+        drawGame();
+        ctx.beginPath();
+        ctx.moveTo(player.x, f(player.x));
+
+        for (let x = player.x; x <= target.x; x += 1) {
+          const y = f(x);
+          if (isNaN(y)) break;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Check hit
+        const hitY = f(target.x);
+        if (Math.abs(hitY - target.y) < 10) {
+          alert("🎉 Hit!");
+        } else {
+          alert("❌ Missed. Try Again!");
+        }
+      } catch (e) {
+        alert("Invalid equation. Please try again.");
+      }
+    }
+
+    generatePoints();
+    drawGame();
+  </script>
+</body>
+</html>
